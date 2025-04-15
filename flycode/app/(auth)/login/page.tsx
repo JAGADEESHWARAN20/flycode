@@ -10,21 +10,31 @@ export default function LoginPage() {
      const [error, setError] = useState<string | null>(null);
      const router = useRouter();
 
+     const getCallbackUrl = () => {
+          // Handle both client-side and server-side rendering
+          if (typeof window !== 'undefined') {
+               return `${window.location.origin}/auth/callback`;
+          }
+          return `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+     };
+
      const handleSignInWithGoogle = async () => {
           try {
                setLoading(true);
+               setError(null);
+
                const { error: authError } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
+                    options: {
+                         redirectTo: getCallbackUrl(),
+                    }
                });
 
                if (authError) {
-                    setError(authError.message);
-               } else {
-                    router.push('/dashboard');
+                    throw new Error(authError.message);
                }
           } catch (err) {
-               // Use a more specific error type if possible, otherwise keep it as Error
-               setError((err as Error).message);
+               setError(err instanceof Error ? err.message : 'An unknown error occurred');
           } finally {
                setLoading(false);
           }
@@ -36,7 +46,7 @@ export default function LoginPage() {
                <button
                     onClick={handleSignInWithGoogle}
                     disabled={loading}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
                >
                     {loading ? 'Signing in with Google...' : 'Sign in with Google'}
                </button>
