@@ -15,9 +15,6 @@ export default function LoginPage() {
                setLoading(true);
                const { error: authError } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
-                    options: {
-                         redirectTo: `https://fyglurxxeooxhciutsch.supabase.co/auth/v1/callback`,
-                    },
                });
 
                if (authError) {
