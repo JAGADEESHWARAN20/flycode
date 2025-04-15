@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { Session } from '@supabase/auth-helpers-nextjs' // Import the type for session
 
-export default function Home({ session }: { session: any }) {
+export default function Home({ session }: { session: Session | null }) {
      if (!session?.user) {
           return (
                <div className="flex flex-col items-center justify-center h-screen gap-4">
