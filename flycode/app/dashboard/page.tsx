@@ -3,10 +3,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/utils/supabaseClient'; // Adjust import path as needed
+import { supabase } from '@/utils/supabaseClient'; // Import your supabase client instance
+import { SupabaseClient, Session } from '@supabase/supabase-js'; // Import the SupabaseClient and Session types
+
+// Define a type for the user object
+type User = Session['user'] | null;
 
 export default function DashboardPage() {
-     const [user, setUser] = useState<any | null>(null);
+     const [user, setUser] = useState<User>(null);
      const router = useRouter();
      const [loading, setLoading] = useState(true);
 
@@ -34,7 +38,11 @@ export default function DashboardPage() {
                }
           );
 
-          return () => subscription.unsubscribe(); // Clean up the listener
+          return () => {
+               if (subscription?.unsubscribe) {
+                    subscription.unsubscribe();
+               }
+          };
      }, [router]);
 
      if (loading) {
@@ -48,7 +56,7 @@ export default function DashboardPage() {
      return (
           <div className="p-6">
                <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-               <p>Welcome, {user.email}!</p>
+               <p>Welcome, {user?.email}!</p>
                {/* You can display more user information here */}
           </div>
      );

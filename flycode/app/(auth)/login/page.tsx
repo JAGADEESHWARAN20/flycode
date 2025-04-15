@@ -2,13 +2,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/utils/supabaseClient'; // Adjust import path as needed
+import { useRouter } from 'next/navigation'; // Remove this line if not used
+import { supabase } from '@/utils/supabaseClient';
+
 
 export default function LoginPage() {
      const [loading, setLoading] = useState(false);
      const [error, setError] = useState<string | null>(null);
-     const router = useRouter();
+     const router = useRouter(); // Keep this if you are using it for redirection
 
      const handleSignInWithGoogle = async () => {
           try {
@@ -16,12 +17,14 @@ export default function LoginPage() {
                const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                         redirectTo: `${window.location.origin}/dashboard`, // Redirect after successful login
+                         redirectTo: `${window.location.origin}/dashboard`,
                     },
                });
 
                if (error) {
                     setError(error.message);
+               } else {
+                    router.push('/dashboard'); // Example: Redirect to dashboard on success
                }
           } catch (err: any) {
                setError(err.message);
