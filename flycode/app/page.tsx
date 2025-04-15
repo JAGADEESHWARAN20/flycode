@@ -1,5 +1,3 @@
-'use client'
-
 import { createClient } from '@/utils/supabase/server'
 import { useState } from 'react'
 import Link from 'next/link'
@@ -8,6 +6,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -84,9 +83,10 @@ function AddUsernameDialog() {
     })
 
     if (res.ok) {
+      toast.success('Username updated successfully!') // Success toast
       window.location.reload()
     } else {
-      alert('Failed to update username')
+      toast.error('Failed to update username') // Error toast
     }
 
     setLoading(false)
