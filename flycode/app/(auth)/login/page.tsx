@@ -26,7 +26,11 @@ export default function LoginPage() {
                const { error: authError } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                         redirectTo: 'https://flycode.vercel.app/auth/callback'
+                         redirectTo: 'https://flycode.vercel.app/auth/callback',
+                         queryParams: {
+                              access_type: 'offline',
+                              prompt: 'consent',
+                         },
                     }
                });
 
