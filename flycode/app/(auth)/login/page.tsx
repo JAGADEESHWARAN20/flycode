@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
-import { AuthError } from '@supabase/supabase-js'; // Import AuthError for better type safety
 
 export default function LoginPage() {
      const [loading, setLoading] = useState(false);
