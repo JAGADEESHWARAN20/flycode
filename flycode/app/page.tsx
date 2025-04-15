@@ -5,6 +5,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { signOut } from '@/utils/actions'
 import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -13,10 +16,10 @@ export default async function Home() {
 
   if (!session.data.user)
     return (
-      <div className='flex flex-col items-center justify-center h-screen gap-4'>
-        <h1 className='text-4xl font-bold'>Not Authenticated</h1>
-        <Link className='btn' href='/auth'>
-          Sign in
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <h1 className="text-4xl font-bold">Not Authenticated</h1>
+        <Link href="/auth">
+          <Button>Sign in</Button>
         </Link>
       </div>
     )
@@ -34,34 +37,32 @@ export default async function Home() {
   console.log(session)
 
   return (
-    <div className=''>
+    <div className="">
       {/* Container at the center of the page */}
-      <div className='flex flex-col items-center justify-center h-screen gap-4'>
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
         {avatar_url && (
           <Image
             src={avatar_url}
             alt={name}
             width={200}
             height={200}
-            className='rounded-full'
+            className="rounded-full"
             quality={100}
           />
         )}
-        <h1 className='text-4xl font-bold'>{name}</h1>
-        <p className='text-xl'>User Name: {userName}</p>
-        <p className='text-xl'>Email: {email}</p>
-        <p className='text-xl'>Created with: {app_metadata.provider}</p>
+        <h1 className="text-4xl font-bold">{name}</h1>
+        <p className="text-xl">User Name: {userName}</p>
+        <p className="text-xl">Email: {email}</p>
+        <p className="text-xl">Created with: {app_metadata.provider}</p>
 
         {!user_name && (
-          <div className='fixed bottom-8 right-8'>
+          <div className="fixed bottom-8 right-8">
             <AddUsernameDialog />
           </div>
         )}
 
         <form action={signOut}>
-          <button className='btn' type='submit'>
-            Sign Out
-          </button>
+          <Button type="submit">Sign Out</Button>
         </form>
       </div>
     </div>
@@ -92,22 +93,29 @@ function AddUsernameDialog() {
   }
 
   return (
-    <div className='p-4 bg-white shadow-md rounded-lg'>
-      <h2 className='text-xl font-bold mb-2'>Set Your Username</h2>
-      <input
-        type='text'
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className='border p-2 w-full rounded mb-2'
-        placeholder='Enter your username'
-      />
-      <button
-        className='btn w-full'
-        onClick={handleSubmit}
-        disabled={loading || !username.trim()}
-      >
-        {loading ? 'Saving...' : 'Save'}
-      </button>
-    </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Set Your Username</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Set Your Username</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <Input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter your username"
+          />
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !username.trim()}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
