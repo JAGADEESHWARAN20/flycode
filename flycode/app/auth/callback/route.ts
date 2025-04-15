@@ -31,5 +31,5 @@ export async function GET(request: NextRequest) {
      }
 
      // Fallback redirect if no code or error
-     return NextResponse.redirect(`${requestUrl.origin}/login`);
+     return NextResponse.redirect(`${requestUrl.origin}/dashboard`);
 }
