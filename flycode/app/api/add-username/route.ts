@@ -4,6 +4,9 @@ import { cookies } from 'next/headers';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
+  const cookieStore = cookies();
+  console.log('API Route Cookies:', Object.fromEntries(cookieStore.entries())); // Log all cookies
+
   const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
 
   try {
