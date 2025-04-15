@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   console.log('API Route Cookies:', Object.fromEntries(cookieStore.entries())); // Log all cookies
 
   const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
@@ -35,6 +35,10 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error('Error creating user profile:', profileError);
+      // Check if the error is due to a unique constraint violation (username already exists)
+      if (profileError.code === '23505' && profileError.details?.includes('username')) {
+        return NextResponse.json({ error: 'Username already exists.' }, { status: 409 }); // Conflict
+      }
       return NextResponse.json({ error: 'Failed to create user profile.' }, { status: 500 });
     }
 
@@ -46,6 +50,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const cookieStore = await cookies();
   const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
 
   try {
@@ -86,6 +91,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function GET() {
+  const cookieStore = await cookies();
   const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
 
   try {
