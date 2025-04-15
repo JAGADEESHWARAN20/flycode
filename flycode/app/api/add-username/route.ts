@@ -47,16 +47,15 @@ export async function POST(request: Request) {
                });
           }
 
-          // 2. Update the users table with the username (if you want to store it there as well)
+          // 2. Update the users table with the username (optional, assuming 'user_name' column exists)
           const { error: userUpdateError } = await supabase
                .from('users')
-               .update({ user_name: username }) // Assuming you want to add 'user_name' to the 'users' table
+               .update({ user_name: username })
                .eq('id', userId);
 
           if (userUpdateError) {
                console.error('Error updating users table:', userUpdateError);
-               // Optionally, you might not want to fail the entire request if this update fails.
-               // Consider logging the error and continuing if it's not critical.
+               // Consider whether to still return success if this optional update fails
           }
 
           return new NextResponse(JSON.stringify({ message: 'Username updated successfully.' }), {
