@@ -2,21 +2,21 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
 
 export default function LoginPage() {
      const [loading, setLoading] = useState(false);
      const [error, setError] = useState<string | null>(null);
-     const router = useRouter();
+     // const router = useRouter();
 
-     const getCallbackUrl = () => {
-          // Handle both client-side and server-side rendering
-          if (typeof window !== 'undefined') {
-               return `${window.location.origin}/auth/callback`;
-          }
-          return `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
-     };
+     // const getCallbackUrl = () => {
+     //      // Handle both client-side and server-side rendering
+     //      if (typeof window !== 'undefined') {
+     //           return `${window.location.origin}/auth/callback`;
+     //      }
+     //      return `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+     // };
 
      const handleSignInWithGoogle = async () => {
           try {
@@ -26,7 +26,7 @@ export default function LoginPage() {
                const { error: authError } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                         redirectTo: getCallbackUrl(),
+                         redirectTo: 'http://localhost:3000/auth/callback'
                     }
                });
 
