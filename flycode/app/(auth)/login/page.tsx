@@ -2,32 +2,33 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Remove this line if not used
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabaseClient';
-
+import { AuthError } from '@supabase/supabase-js'; // Import AuthError for better type safety
 
 export default function LoginPage() {
      const [loading, setLoading] = useState(false);
      const [error, setError] = useState<string | null>(null);
-     const router = useRouter(); // Keep this if you are using it for redirection
+     const router = useRouter();
 
      const handleSignInWithGoogle = async () => {
           try {
                setLoading(true);
-               const { error } = await supabase.auth.signInWithOAuth({
+               const { error: authError } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
                          redirectTo: `${window.location.origin}/dashboard`,
                     },
                });
 
-               if (error) {
-                    setError(error.message);
+               if (authError) {
+                    setError(authError.message);
                } else {
-                    router.push('/dashboard'); // Example: Redirect to dashboard on success
+                    router.push('/dashboard');
                }
-          } catch (err: any) {
-               setError(err.message);
+          } catch (err) {
+               // Use a more specific error type if possible, otherwise keep it as Error
+               setError((err as Error).message);
           } finally {
                setLoading(false);
           }

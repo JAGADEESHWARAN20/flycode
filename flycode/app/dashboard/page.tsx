@@ -3,10 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/utils/supabaseClient'; // Import your supabase client instance
-import { SupabaseClient, Session } from '@supabase/supabase-js'; // Import the SupabaseClient and Session types
+import { supabase } from '@/utils/supabaseClient';
+import { Session } from '@supabase/supabase-js';
 
-// Define a type for the user object
 type User = Session['user'] | null;
 
 export default function DashboardPage() {
