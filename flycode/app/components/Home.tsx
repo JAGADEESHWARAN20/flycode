@@ -49,7 +49,7 @@ export default function Home({ session }: { session: Session | null }) {
                     </div>
                )}
 
-               <form action="/api/auth/sign-out">
+               <form action="/auth">
                     <Button type="submit">Sign Out</Button>
                </form>
           </div>
