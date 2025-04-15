@@ -51,6 +51,8 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const cookieStore = await cookies();
+  console.log('PATCH Route Cookies:', Object.fromEntries(cookieStore.entries())); // Use cookieStore
+
   const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
 
   try {
@@ -92,6 +94,8 @@ export async function PATCH(request: Request) {
 
 export async function GET() {
   const cookieStore = await cookies();
+  console.log('GET Route Cookies:', Object.fromEntries(cookieStore.entries())); // Use cookieStore
+
   const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
 
   try {
