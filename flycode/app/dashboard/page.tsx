@@ -20,7 +20,7 @@ export default function DashboardPage() {
                     setUser(session.user);
                     setLoading(false);
                } else {
-                    router.push('/(auth)/login');
+                    router.push('/login');
                }
           };
 
@@ -32,7 +32,7 @@ export default function DashboardPage() {
                          setUser(session.user);
                     } else {
                          setUser(null);
-                         router.push('/(auth)/login');
+                         router.push('/login');
                     }
                }
           );
