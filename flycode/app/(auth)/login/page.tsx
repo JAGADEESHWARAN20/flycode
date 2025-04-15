@@ -16,7 +16,7 @@ export default function LoginPage() {
                const { error: authError } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                         redirectTo: `/`,
+                         redirectTo: `https://flycode.vercel.app/dashboard`,
                     },
                });
 
