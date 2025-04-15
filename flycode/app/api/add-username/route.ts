@@ -1,131 +1,70 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { SupabaseClient } from '@supabase/supabase-js';
+// app/api/auth/register/route.ts
+import { createClient } from '@/utils/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  console.log('API Route Cookies:', Object.fromEntries(cookieStore.entries())); // Log all cookies
-
-  const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
-
+export async function POST(req: NextRequest) {
   try {
-    const { username } = await request.json();
+    const supabase = await createClient();
+    const body = await req.json();
 
-    if (!username || typeof username !== 'string' || username.trim() === '') {
-      return NextResponse.json({ error: 'Username cannot be empty.' }, { status: 400 });
+    // Validate required fields
+    const { email, password, name, username, bio, location, website } = body;
+    if (!email || !password || !name || !username) {
+      return NextResponse.json(
+        { error: 'Required fields are missing' },
+        { status: 400 }
+      );
     }
 
-    const {
-      data: { user },
-      error: getUserError,
-    } = await supabase.auth.getUser();
+    // Create user in auth system and get user ID
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-    if (getUserError || !user) {
-      console.error('Error getting user:', getUserError);
-      return NextResponse.json({ error: 'Could not retrieve user information.' }, { status: 401 });
-    }
+    if (authError) throw authError;
 
-    const userId = user.id;
+    const userId = authData.user?.id;
 
-    // Insert a new username if one doesn't already exist
+    // Create user record
+    const { error: userError } = await supabase
+      .from('users')
+      .insert({
+        id: userId,
+        email,
+        name,
+        created_at: new Date().toISOString(),
+        is_active: true,
+        last_seen: new Date().toISOString(),
+      });
+
+    if (userError) throw userError;
+
+    // Create user profile
     const { error: profileError } = await supabase
       .from('user_profiles')
-      .insert({ user_id: userId, username });
+      .insert({
+        user_id: userId,
+        username,
+        bio: bio || '',
+        location: location || '',
+        website: website || '',
+        joined_date: new Date().toISOString(),
+      });
 
-    if (profileError) {
-      console.error('Error creating user profile:', profileError);
-      // Check if the error is due to a unique constraint violation (username already exists)
-      if (profileError.code === '23505' && profileError.details?.includes('username')) {
-        return NextResponse.json({ error: 'Username already exists.' }, { status: 409 }); // Conflict
-      }
-      return NextResponse.json({ error: 'Failed to create user profile.' }, { status: 500 });
-    }
+    if (profileError) throw profileError;
 
-    return NextResponse.json({ message: 'Username added successfully.' }, { status: 201 });
-  } catch (error: unknown) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
-  }
-}
+    return NextResponse.json({
+      message: 'User registered successfully',
+      userId
+    }, { status: 201 });
 
-export async function PATCH(request: Request) {
-  const cookieStore = await cookies();
-  console.log('PATCH Route Cookies:', Object.fromEntries(cookieStore.entries())); // Use cookieStore
-
-  const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
-
-  try {
-    const { username } = await request.json();
-
-    if (!username || typeof username !== 'string' || username.trim() === '') {
-      return NextResponse.json({ error: 'Username cannot be empty.' }, { status: 400 });
-    }
-
-    const {
-      data: { user },
-      error: getUserError,
-    } = await supabase.auth.getUser();
-
-    if (getUserError || !user) {
-      console.error('Error getting user:', getUserError);
-      return NextResponse.json({ error: 'Could not retrieve user information.' }, { status: 401 });
-    }
-
-    const userId = user.id;
-
-    // Update the existing username
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .update({ username })
-      .eq('user_id', userId);
-
-    if (profileError) {
-      console.error('Error updating user profile:', profileError);
-      return NextResponse.json({ error: 'Failed to update user profile.' }, { status: 500 });
-    }
-
-    return NextResponse.json({ message: 'Username updated successfully.' }, { status: 200 });
-  } catch (error: unknown) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
-  }
-}
-
-export async function GET() {
-  const cookieStore = await cookies();
-  console.log('GET Route Cookies:', Object.fromEntries(cookieStore.entries())); // Use cookieStore
-
-  const supabase: SupabaseClient = createRouteHandlerClient({ cookies });
-
-  try {
-    const {
-      data: { user },
-      error: getUserError,
-    } = await supabase.auth.getUser();
-
-    if (getUserError || !user) {
-      console.error('Error getting user:', getUserError);
-      return NextResponse.json({ error: 'Could not retrieve user information.' }, { status: 401 });
-    }
-
-    const userId = user.id;
-
-    // Fetch the user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (profileError) {
-      console.error('Error fetching user profile:', profileError);
-      return NextResponse.json({ error: 'Failed to fetch user profile.' }, { status: 500 });
-    }
-
-    return NextResponse.json({ profile }, { status: 200 });
-  } catch (error: unknown) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
+  } catch (error) {
+    console.error('Registration error:', error);
+    return NextResponse.json(
+      { error: 'Failed to register user' },
+      { status: 500 }
+    );
   }
 }
