@@ -1,123 +1,14 @@
-'use client'
+// app/page.tsx
 
 import { createClient } from '@/utils/supabase/server'
-import { useState } from 'react'
-import Link from 'next/link'
-import { signOut } from '@/utils/actions'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { toast } from 'sonner'
+import Home from '@/app/components/Home'
 
-export default async function Home() {
+export default async function Page() {
   const supabase = await createClient()
-
-  const session = await supabase.auth.getUser()
-
-  if (!session.data.user)
-    return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <h1 className="text-4xl font-bold">Not Authenticated</h1>
-        <Link href="/auth">
-          <Button>Sign in</Button>
-        </Link>
-      </div>
-    )
-
-  const {
-    data: {
-      user: { user_metadata, app_metadata },
-    },
-  } = session
-
-  const { name, email, user_name, avatar_url } = user_metadata
-
-  const userName = user_name ? `@${user_name}` : 'User Name Not Set'
-
-  console.log(session)
+  // Fetch the user session on the server
+  const { data: session } = await supabase.auth.getUser()
 
   return (
-    <div className="">
-      {/* Container at the center of the page */}
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
-        {avatar_url && (
-          <Image
-            src={avatar_url}
-            alt={name}
-            width={200}
-            height={200}
-            className="rounded-full"
-            quality={100}
-          />
-        )}
-        <h1 className="text-4xl font-bold">{name}</h1>
-        <p className="text-xl">User Name: {userName}</p>
-        <p className="text-xl">Email: {email}</p>
-        <p className="text-xl">Created with: {app_metadata.provider}</p>
-
-        {!user_name && (
-          <div className="fixed bottom-8 right-8">
-            <AddUsernameDialog />
-          </div>
-        )}
-
-        <form action={signOut}>
-          <Button type="submit">Sign Out</Button>
-        </form>
-      </div>
-    </div>
-  )
-}
-
-function AddUsernameDialog() {
-  const [username, setUsername] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async () => {
-    setLoading(true)
-    const res = await fetch('/api/add-username', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username }),
-    })
-
-    if (res.ok) {
-      toast.success('Username updated successfully!') // Success toast
-      window.location.reload()
-    } else {
-      toast.error('Failed to update username') // Error toast
-    }
-
-    setLoading(false)
-  }
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Set Your Username</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Set Your Username</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <Input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
-          />
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !username.trim()}
-          >
-            {loading ? 'Saving...' : 'Save'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <Home session={session} />
   )
 }
