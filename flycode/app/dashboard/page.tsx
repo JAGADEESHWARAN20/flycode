@@ -10,25 +10,41 @@ export default function DashboardPage() {
      const [user, setUser] = useState<Session['user'] | null>(null);
      const router = useRouter();
      const [loading, setLoading] = useState(true);
+     const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
      useEffect(() => {
           // First check existing session
-          supabase.auth.getSession().then(({ data: { session } }) => {
+          const checkSession = async () => {
+               const { data: { session }, error } = await supabase.auth.getSession();
+
+               if (error) {
+                    console.error('Session error:', error);
+                    router.push('/login');
+                    return;
+               }
+
                if (session?.user) {
                     setUser(session.user);
-                    setLoading(false);
                } else {
                     router.push('/login');
                }
-          });
+               setInitialCheckComplete(true);
+               setLoading(false);
+          };
+
+          checkSession();
 
           // Then subscribe to auth changes
           const { data: { subscription } } = supabase.auth.onAuthStateChange(
                async (event, session) => {
-                    if (event === 'SIGNED_IN' && session?.user) {
+                    if (event === 'INITIAL_SESSION' && initialCheckComplete) {
+                         return; // Skip initial session event after we've already checked
+                    }
+
+                    if (session?.user) {
                          setUser(session.user);
                          setLoading(false);
-                    } else if (event === 'SIGNED_OUT') {
+                    } else {
                          setUser(null);
                          router.push('/login');
                     }
@@ -36,7 +52,7 @@ export default function DashboardPage() {
           );
 
           return () => subscription?.unsubscribe();
-     }, [router]);
+     }, [router, initialCheckComplete]);
 
      if (loading) {
           return <div>Loading dashboard...</div>;
@@ -50,6 +66,15 @@ export default function DashboardPage() {
           <div className="p-6">
                <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
                <p>Welcome, {user.email}!</p>
+               <button
+                    onClick={async () => {
+                         await supabase.auth.signOut();
+                         router.push('/login');
+                    }}
+                    className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+               >
+                    Sign Out
+               </button>
           </div>
      );
 }
