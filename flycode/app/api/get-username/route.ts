@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server'; // Import your createClient function
+import { createClient } from '@/utils/supabase/server';
 
-export async function GET(request: Request, { params }: { params: { user_id: string } }) {
+// Corrected type definition for the route parameters
+interface Params {
+  user_id: string;
+}
+
+export async function GET(request: Request, { params }: { params: Params }) {
   const { user_id } = params;
 
   if (!user_id) {
@@ -9,7 +14,7 @@ export async function GET(request: Request, { params }: { params: { user_id: str
   }
 
   try {
-    const supabase = await createClient(); // Use your createClient function
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('user_profiles')
       .select('username')
