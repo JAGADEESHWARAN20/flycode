@@ -16,7 +16,7 @@ export default function Home({ session }: { session: Session | null }) {
 
 
   // --- Fetch User Data ---
-  const fetchUserData = useCallback(async (userId: string) => {
+  const fetchUserData = useCallback(async (userId: string) => { // Removed unused userId
     setLoading(true);
     try {
       const res = await fetch(`/api/get-username`); // Get profile
@@ -83,8 +83,8 @@ export default function Home({ session }: { session: Session | null }) {
       } else {
         const profileError = profileRes.ok ? "" : await profileRes.text();
         const userError = userRes.ok ? "" : await userRes.text();
-        console.error('Failed to update profile:', await profileError);
-        console.error('Failed to update user:', await userError);
+        console.error('Failed to update profile:', profileError);
+        console.error('Failed to update user:', userError);
         toast.error('Failed to update profile.');
       }
     } catch (error) {

@@ -1,20 +1,15 @@
+// File: app/api/get-user-profile/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import { createClient } from '@/utils/supabase/server'; // Import your Supabase client
+import { createClient } from '@/utils/supabase/server';
 
-interface UserProfileData {
-  user_id: string;
-  username: string;
-  bio?: string;
-  avatar_url?: string;
-  location?: string;
-  website?: string;
-}
+// Removed unused UserProfileData interface import/definition
 
 /**
  * API route handler to get user profile data from the user_profiles table
  * for the currently authenticated user.
  */
-export async function GET(request: NextRequest) { // Changed to NextRequest
+// Removed unused 'request' parameter
+export async function GET() {
   try {
     const supabase = await createClient();
     const {
@@ -34,6 +29,10 @@ export async function GET(request: NextRequest) { // Changed to NextRequest
       .single(); // Expect only one profile per user
 
     if (error) {
+      // Handle specific case where profile doesn't exist yet
+      if (error.code === 'PGRST116') { // PostgREST error code for "Not Found" with .single()
+        return NextResponse.json({ message: 'User profile not found' }, { status: 404 });
+      }
       console.error('Supabase error fetching user profile:', error);
       return NextResponse.json(
         { error: 'Failed to fetch user profile', details: error.message },
@@ -41,10 +40,9 @@ export async function GET(request: NextRequest) { // Changed to NextRequest
       );
     }
 
-    if (!data) {
-      return NextResponse.json({ message: 'User profile not found' }, { status: 404 });
-    }
+    // No need to check !data if error handling for PGRST116 is done
     return NextResponse.json(data, { status: 200 });
+
   } catch (error) {
     console.error('Error in /api/get-user-profile:', error);
     return NextResponse.json(
