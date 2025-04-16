@@ -3,7 +3,6 @@ import { NextResponse, NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 interface UserData {
-     id: string;
      email: string;
      name: string;
 }
@@ -12,17 +11,17 @@ export async function POST(request: NextRequest) {
      try {
           const supabase = await createClient();
 
-          const { id, email, name }: UserData = await request.json();
+          const { email, name }: UserData = await request.json();
 
-          if (!id || !email || !name) {
-               return NextResponse.json({ error: 'Missing required fields (id, email, name)' }, { status: 400 });
+          if (!email || !name) {
+               return NextResponse.json({ error: 'Missing required fields (email, name)' }, { status: 400 });
           }
 
-          // Check if the user already exists
+          // Check if a user with this email already exists (optional, but good practice)
           const { data: existingUser, error: selectError } = await supabase
                .from('users')
                .select('id')
-               .eq('id', id)
+               .eq('email', email)
                .single();
 
           if (selectError) {
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
           if (!existingUser) {
                const { error: insertError } = await supabase
                     .from('users')
-                    .insert([{ id, email, name, is_active: true }]); // Initial is_active
+                    .insert([{ email, name, is_active: true }]); // Initial is_active
 
                if (insertError) {
                     console.error('Supabase error inserting user data:', insertError);
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
                }
                return NextResponse.json({ message: 'User data inserted successfully' }, { status: 201 });
           } else {
-               return NextResponse.json({ message: 'User already exists' }, { status: 200 });
+               return NextResponse.json({ message: 'User with this email already exists' }, { status: 200 });
           }
      } catch (error) {
           console.error('Error in /api/add-user-data:', error);
