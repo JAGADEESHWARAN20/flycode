@@ -24,7 +24,7 @@ export default function Home({ session }: { session: Session | null }) {
   const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/get-username`);
+      const res = await fetch(`${ window.location.href }/api/get-username`);
       if (res.ok) {
         const data = await res.json();
         setUserName(data.username);
@@ -46,7 +46,7 @@ export default function Home({ session }: { session: Session | null }) {
     const initializeUser = async () => {
       if (session?.user && !userInitialized) {
         try {
-          const addUserRes = await fetch('/api/add-user-data', {
+          const addUserRes = await fetch(`${window.location.href}/api/add-user-data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -81,7 +81,7 @@ export default function Home({ session }: { session: Session | null }) {
     }
     setLoading(true);
     try {
-      const profileRes = await fetch('/api/update-profile', {
+      const profileRes = await fetch(`${window.location.href}/api/update-profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
