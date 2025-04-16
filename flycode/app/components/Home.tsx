@@ -10,9 +10,32 @@ import { useState, useEffect } from 'react';
 import { Session } from '@supabase/auth-helpers-nextjs';
 
 export default function Home({ session }: { session: Session | null }) {
-  // Log the session object to verify the required parameters
+  const [userName, setUserName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Add a loading state
+
   useEffect(() => {
-    console.log('Session Object:', session); // Console log the session object
+    if (session?.user) {
+      const fetchUserName = async () => {
+        try {
+          const res = await fetch(`/api/get-username/${session.user.id}`); // Fetch username
+          if (res.ok) {
+            const data = await res.json();
+            setUserName(data.username);
+          } else {
+            console.error('Failed to fetch username:', await res.text());
+            setUserName('User Name Not Set'); // Set a default value on error
+          }
+        } catch (error) {
+          console.error('Error fetching username:', error);
+          setUserName('User Name Not Set');  // set default on error
+        } finally {
+          setLoading(false); // Update loading state
+        }
+      };
+      fetchUserName();
+    } else {
+      setLoading(false);
+    }
   }, [session]);
 
   if (!session?.user) {
@@ -27,9 +50,9 @@ export default function Home({ session }: { session: Session | null }) {
   }
 
   const { user_metadata, app_metadata } = session.user;
-  const { name, email, user_name, avatar_url } = user_metadata;
+  const { name, email, avatar_url } = user_metadata;
 
-  const userName = user_name ? `@${user_name}` : 'User Name Not Set';
+  const displayUserName = userName ? `@${userName}` : 'User Name Not Set';
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
@@ -44,11 +67,13 @@ export default function Home({ session }: { session: Session | null }) {
         />
       )}
       <h1 className="text-4xl font-bold">{name}</h1>
-      <p className="text-xl">User Name: {userName}</p>
+      <p className="text-xl">
+        User Name: {loading ? 'Loading...' : displayUserName}
+      </p>
       <p className="text-xl">Email: {email}</p>
       <p className="text-xl">Created with: {app_metadata.provider}</p>
 
-      {!user_name && (
+      {!userName && (
         <div className="fixed bottom-8 right-8">
           <AddUsernameDialog />
         </div>
@@ -76,10 +101,10 @@ function AddUsernameDialog() {
     });
 
     if (res.ok) {
-      toast.success('Username updated successfully!'); // Success toast
+      toast.success('Username updated successfully!');
       window.location.reload();
     } else {
-      toast.error('Failed to update username'); // Error toast
+      toast.error('Failed to update username');
     }
 
     setLoading(false);
