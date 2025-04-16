@@ -78,7 +78,7 @@ export default function Home({ session }: { session: Session | null }) {
 
       // Update the 'name' in the 'users' table
       // *** CHANGE THE ENDPOINT HERE ***
-      const userRes = await fetch('/api/update-user', { // Use the update endpoint
+      const userRes = await fetch('/api/add-user-data', { // Use the update endpoint
         method: 'POST', // Or PUT/PATCH if your update-user API uses that
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
