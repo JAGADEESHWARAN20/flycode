@@ -1,14 +1,12 @@
-// File: app/api/get-user-profile/route.ts
-import { NextResponse, NextRequest } from 'next/server';
+// File: app/api/get-username/route.ts (or the correct path)
+import { NextResponse } from 'next/server'; // Removed 'NextRequest' from import
 import { createClient } from '@/utils/supabase/server';
-
-// Removed unused UserProfileData interface import/definition
 
 /**
  * API route handler to get user profile data from the user_profiles table
  * for the currently authenticated user.
  */
-// Removed unused 'request' parameter
+// Removed unused 'request' parameter previously
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -41,10 +39,20 @@ export async function GET() {
     }
 
     // No need to check !data if error handling for PGRST116 is done
-    return NextResponse.json(data, { status: 200 });
+    // Ensure the 'username' field exists before returning
+    if (data && typeof data.username !== 'undefined') {
+      return NextResponse.json(data, { status: 200 });
+    } else {
+      // Handle case where profile exists but has no username yet (if possible based on schema)
+      // Or if data structure is unexpected
+      console.warn('User profile data fetched but missing username:', data);
+      // You might return the partial data or a specific message/status
+      return NextResponse.json({ message: 'Username not set in profile' }, { status: 404 }); // Or return partial data with 200
+    }
+
 
   } catch (error) {
-    console.error('Error in /api/get-user-profile:', error);
+    console.error('Error in /api/get-username:', error); // Adjusted path in log
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
