@@ -164,7 +164,7 @@ export default function Home({ session }: { session: Session | null }) {
       )}
 
       {/* Sign out form - ensure action points to your signout logic */}
-      <form action="/auth/signout" method="post"> {/* Usually POST for signout */}
+      <form action="/auth" method="post"> {/* Usually POST for signout */}
         <Button type="submit">Sign Out</Button>
       </form>
     </div>
