@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
       source: '/',
       destination: '/app',
     },
+    {
+      source: '/auth',
+      destination: '/app/auth',
+    },
   ],
 };
 
