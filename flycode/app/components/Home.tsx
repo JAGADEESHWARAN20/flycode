@@ -57,48 +57,54 @@ export default function Home({ session }: { session: Session | null }) {
   }, [session]); // Dependency on fetchUserData removed as it's stable due to useCallback([])
 
   // --- Handle Username Update (and User Table Update) ---
+  // Inside Home.tsx component
+
   const handleUsernameUpdate = async (newUsername: string) => {
+    if (!session) {
+      toast.error('You must be logged in to update your profile.');
+      return;
+    }
     setLoading(true);
     try {
-      // Update both user_profiles and users tables
+      // Update profile username
       const profileRes = await fetch('/api/update-profile', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: session!.user.id,
+          user_id: session.user.id,
           username: newUsername,
         }),
       });
 
-      // Also update the 'name' in the 'users' table if username should match display name
-      const userRes = await fetch('/api/add-user-data', { //update user table
-        method: 'POST', // Should this be PUT or PATCH? POST is often for creation.
-        headers: {
-          'Content-Type': 'application/json'
-        },
+      // Update the 'name' in the 'users' table
+      // *** CHANGE THE ENDPOINT HERE ***
+      const userRes = await fetch('/api/update-user', { // Use the update endpoint
+        method: 'POST', // Or PUT/PATCH if your update-user API uses that
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: session!.user.id,
-          name: newUsername // Assuming username should also be the display name
+          id: session.user.id, // ID of the user to update
+          name: newUsername     // The new name value
+          // Only send fields required by /api/update-user for an update
         })
-      })
+      });
 
       if (profileRes.ok && userRes.ok) {
         toast.success('Profile updated successfully!');
-        setUserName(newUsername); // Update the local state
-
+        setUserName(newUsername);
       } else {
-        const profileError = profileRes.ok ? "" : `Profile API Error: ${await profileRes.text()}`;
-        const userError = userRes.ok ? "" : `User API Error: ${await userRes.text()}`;
-        console.error('Failed to update profile:', profileError);
-        console.error('Failed to update user:', userError);
-        // Provide more specific feedback if possible
+        // Improved error reporting
+        const profileErrorText = profileRes.ok ? "" : await profileRes.text();
+        const userErrorText = userRes.ok ? "" : await userRes.text();
+        const profileError = profileRes.ok ? "" : `Profile API Error (${profileRes.status}): ${profileErrorText}`;
+        const userError = userRes.ok ? "" : `User API Error (${userRes.status}): ${userErrorText}`;
+
+        console.error('Failed to update profile:', profileError || 'Success');
+        console.error('Failed to update user:', userError || 'Success');
         toast.error(`Failed to update profile. ${profileError} ${userError}`);
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Error updating profile.');
+      console.error('Error during update process:', error);
+      toast.error('An unexpected error occurred during the update.');
     } finally {
       setLoading(false);
     }

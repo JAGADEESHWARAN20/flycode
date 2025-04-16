@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) { // Changed type to NextReques
           const { data, error } = await supabase
                .from('user_profiles')
                .upsert(
-                    [
+                    [ // Ensure it's an array for upsert
                          {
                               user_id,
                               username,
@@ -50,12 +50,13 @@ export async function POST(request: NextRequest) { // Changed type to NextReques
                               avatar_url,
                               location,
                               website,
-                              updated_at: new Date().toISOString(),
+                              // updated_at: new Date().toISOString(), // REMOVE THIS LINE - rely on trigger
                          },
                     ],
-                    { onConflict: 'user_id' }
+                    { onConflict: 'user_id' } // This will now work after adding the constraint
                )
-               .select();
+               .select()
+               .single(); // If upserting one item, .single() is good
 
           if (error) {
                console.error('Supabase error upserting user profile:', error);
