@@ -6,37 +6,94 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Session } from '@supabase/auth-helpers-nextjs';
+
 
 export default function Home({ session }: { session: Session | null }) {
   const [userName, setUserName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
 
+
+  // --- Fetch User Data ---
+  const fetchUserData = useCallback(async (userId: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/get-username`); // Get profile
+      if (res.ok) {
+        const data = await res.json();
+        setUserName(data.username);
+      } else if (res.status === 404) {
+        // User profile doesn't exist,  set username to null
+        setUserName(null);
+      }
+      else {
+        console.error('Failed to fetch user data:', await res.text());
+        toast.error('Failed to load profile data.');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      toast.error('Error loading profile data.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+  // --- Initial Load and Authentication Check ---
   useEffect(() => {
     if (session?.user) {
-      const fetchUserName = async () => {
-        try {
-          const res = await fetch(`/api/get-username/${session.user.id}`); // Fetch username
-          if (res.ok) {
-            const data = await res.json();
-            setUserName(data.username);
-          } else {
-            console.error('Failed to fetch username:', await res.text());
-            setUserName('User Name Not Set'); // Set a default value on error
-          }
-        } catch (error) {
-          console.error('Error fetching username:', error);
-          setUserName('User Name Not Set');  // set default on error
-        } finally {
-          setLoading(false); // Update loading state
-        }
-      };
-      fetchUserName();
+      fetchUserData(session.user.id);
     } else {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, fetchUserData]);
+
+  // --- Handle Username Update (and User Table Update) ---
+  const handleUsernameUpdate = async (newUsername: string) => {
+    setLoading(true);
+    try {
+      // Update both user_profiles and users tables
+      const profileRes = await fetch('/api/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: session!.user.id,
+          username: newUsername,
+        }),
+      });
+
+      const userRes = await fetch('/api/update-user', { //update user table
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: session!.user.id,
+          name: newUsername
+        })
+      })
+
+      if (profileRes.ok && userRes.ok) {
+        toast.success('Profile updated successfully!');
+        setUserName(newUsername); // Update the local state
+
+      } else {
+        const profileError = profileRes.ok ? "" : await profileRes.text();
+        const userError = userRes.ok ? "" : await userRes.text();
+        console.error('Failed to update profile:', await profileError);
+        console.error('Failed to update user:', await userError);
+        toast.error('Failed to update profile.');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Error updating profile.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!session?.user) {
     return (
@@ -75,7 +132,7 @@ export default function Home({ session }: { session: Session | null }) {
 
       {!userName && (
         <div className="fixed bottom-8 right-8">
-          <AddUsernameDialog />
+          <AddUsernameDialog onUsernameUpdate={handleUsernameUpdate} />
         </div>
       )}
 
@@ -86,27 +143,19 @@ export default function Home({ session }: { session: Session | null }) {
   );
 }
 
-function AddUsernameDialog() {
+function AddUsernameDialog({ onUsernameUpdate }: { onUsernameUpdate: (username: string) => void }) {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     setLoading(true);
-    const res = await fetch('/api/add-username', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username }),
-    });
-
-    if (res.ok) {
-      toast.success('Username updated successfully!');
-      window.location.reload();
-    } else {
-      toast.error('Failed to update username');
+    if (!username.trim()) {
+      toast.error('Username cannot be empty.');
+      setLoading(false);
+      return;
     }
 
+    onUsernameUpdate(username); // Call the callback
     setLoading(false);
   };
 
