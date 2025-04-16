@@ -66,7 +66,7 @@ export default function Home({ session }: { session: Session | null }) {
     }
     setLoading(true);
     try {
-      // Update profile username
+      // Update user profile (username)
       const profileRes = await fetch('/api/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,31 +76,13 @@ export default function Home({ session }: { session: Session | null }) {
         }),
       });
 
-      // Update the 'name' in the 'users' table
-      // *** CHANGE THE ENDPOINT HERE ***
-      const userRes = await fetch('/api/add-user-data', { // Use the update endpoint
-        method: 'POST', // Or PUT/PATCH if your update-user API uses that
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: session.user.id, // ID of the user to update
-          name: user_metadata.name,     // The new name value
-          email:session.user.email,
-        })
-      });
-
-      if (profileRes.ok && userRes.ok) {
+      if (profileRes.ok) {
         toast.success('Profile updated successfully!');
         setUserName(newUsername);
       } else {
-        // Improved error reporting
         const profileErrorText = profileRes.ok ? "" : await profileRes.text();
-        const userErrorText = userRes.ok ? "" : await userRes.text();
-        const profileError = profileRes.ok ? "" : `Profile API Error (${profileRes.status}): ${profileErrorText}`;
-        const userError = userRes.ok ? "" : `User API Error (${userRes.status}): ${userErrorText}`;
-
-        console.error('Failed to update profile:', profileError || 'Success');
-        console.error('Failed to update user:', userError || 'Success');
-        toast.error(`Failed to update profile. ${profileError} ${userError}`);
+        console.error('Failed to update profile:', `Profile API Error (${profileRes.status}): ${profileErrorText}`);
+        toast.error(`Failed to update profile. Profile API Error (${profileRes.status}): ${profileErrorText}`);
       }
     } catch (error) {
       console.error('Error during update process:', error);
