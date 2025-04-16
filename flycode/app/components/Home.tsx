@@ -83,8 +83,8 @@ export default function Home({ session }: { session: Session | null }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: session.user.id, // ID of the user to update
-          name: newUsername     // The new name value
-          // Only send fields required by /api/update-user for an update
+          name: newUsername,     // The new name value
+          email:session.user.email,
         })
       });
 
