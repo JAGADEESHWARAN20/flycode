@@ -1,4 +1,3 @@
-// app/api/update-profile/route.ts (or pages/api/update-profile.ts)
 import { NextResponse, NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
                return NextResponse.json({ error: 'user_id and username are required' }, { status: 400 });
           }
 
-          // **Attempt to find the user in the 'users' table**
+          // Check if the user exists in the 'users' table
           const { data: existingUser, error: userError } = await supabase
                .from('users')
                .select('id')
@@ -44,16 +43,16 @@ export async function POST(request: NextRequest) {
                return NextResponse.json({ error: 'Error checking user existence', details: userError.message }, { status: 500 });
           }
 
-          // **If the user doesn't exist, attempt to create a minimal record using user_metadata**
+          // If the user doesn't exist, create a minimal record using user_metadata
           if (!existingUser) {
                const { user } = session;
-               const initialName = user?.user_metadata?.name || 'New User'; // Fallback name
+               const initialName = user?.user_metadata?.name || 'New User';
                const initialEmail = user?.email;
 
                if (initialEmail) {
                     const { error: createUserError } = await supabase
                          .from('users')
-                         .insert([{ id: user_id, email: initialEmail, name: initialName }]); // You still lack password_hash
+                         .insert([{ id: user_id, email: initialEmail, name: initialName }]);
 
                     if (createUserError) {
                          console.error('Error creating user:', createUserError);
@@ -65,7 +64,7 @@ export async function POST(request: NextRequest) {
                }
           }
 
-          // **Now upsert the user profile**
+          // Upsert the user profile
           const { data: profileData, error: profileError } = await supabase
                .from('user_profiles')
                .upsert(

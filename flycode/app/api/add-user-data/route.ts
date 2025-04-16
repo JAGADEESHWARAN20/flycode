@@ -1,4 +1,3 @@
-// app/api/add-user-data/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
@@ -10,14 +9,13 @@ interface UserData {
 export async function POST(request: NextRequest) {
      try {
           const supabase = await createClient();
-
           const { email, name }: UserData = await request.json();
 
           if (!email || !name) {
                return NextResponse.json({ error: 'Missing required fields (email, name)' }, { status: 400 });
           }
 
-          // Check if a user with this email already exists (optional, but good practice)
+          // Check if a user with this email already exists
           const { data: existingUser, error: selectError } = await supabase
                .from('users')
                .select('id')
@@ -32,7 +30,7 @@ export async function POST(request: NextRequest) {
           if (!existingUser) {
                const { error: insertError } = await supabase
                     .from('users')
-                    .insert([{ email, name, is_active: true }]); // Initial is_active
+                    .insert([{ email, name, is_active: true }]);
 
                if (insertError) {
                     console.error('Supabase error inserting user data:', insertError);
