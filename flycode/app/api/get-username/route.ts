@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server'; // Import your Supabase client
+import { createClient } from '@/utils/supabase/server';
 
+// Define an interface for the route parameters
 interface Params {
   user_id: string;
 }
 
+// Define the type for the second argument of the GET function
+type RouteParams = {
+  params: Params;
+};
+
 /**
  * API route handler to retrieve a username from the user_profiles table in Supabase.
- *
- * @param request The incoming HTTP request.
- * @param params  The route parameters, including the user_id.
- * @returns A NextResponse object containing the username or an error.
  */
 export async function GET(
   request: Request,
-  { params }: { params: Params }
+  context: RouteParams // Use the RouteParams type here
 ) {
+  const { params } = context;
   const { user_id } = params;
 
   if (!user_id) {
@@ -23,7 +26,7 @@ export async function GET(
   }
 
   try {
-    const supabase = await createClient(); // Use your server-side Supabase client
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('user_profiles')
       .select('username')
