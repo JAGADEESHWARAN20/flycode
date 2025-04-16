@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
                return NextResponse.json({ error: 'Missing required fields (email, name)' }, { status: 400 });
           }
 
-          // Check if a user with this email already exists
           const { data: existingUser, error: selectError } = await supabase
                .from('users')
                .select('id')

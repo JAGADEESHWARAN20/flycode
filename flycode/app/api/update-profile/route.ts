@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
                return NextResponse.json({ error: 'user_id and username are required' }, { status: 400 });
           }
 
-          // Check if the user exists in the 'users' table
           const { data: existingUser, error: userError } = await supabase
                .from('users')
                .select('id')
@@ -43,7 +42,6 @@ export async function POST(request: NextRequest) {
                return NextResponse.json({ error: 'Error checking user existence', details: userError.message }, { status: 500 });
           }
 
-          // If the user doesn't exist, create a minimal record using user_metadata
           if (!existingUser) {
                const { user } = session;
                const initialName = user?.user_metadata?.name || 'New User';
@@ -64,7 +62,6 @@ export async function POST(request: NextRequest) {
                }
           }
 
-          // Upsert the user profile
           const { data: profileData, error: profileError } = await supabase
                .from('user_profiles')
                .upsert(

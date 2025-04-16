@@ -14,13 +14,12 @@ interface ProfileFormData {
   bio?: string;
   location?: string;
   website?: string;
-  // Add other profile fields as needed
 }
 
 export default function Home({ session }: { session: Session | null }) {
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userInitialized, setUserInitialized] = useState(false); // Track if user data initialization is complete
+  const [userInitialized, setUserInitialized] = useState(false);
 
   const fetchUserData = useCallback(async () => {
     setLoading(true);
@@ -60,20 +59,19 @@ export default function Home({ session }: { session: Session | null }) {
             console.error('Failed to add user data:', await addUserRes.text());
             toast.error('Failed to initialize user data.');
           }
-          setUserInitialized(true); // Mark initialization as complete
-          await fetchUserData(); // Fetch profile data after potentially adding user
+          setUserInitialized(true);
+          await fetchUserData();
         } catch (error) {
           console.error('Error during user initialization:', error);
           toast.error('Error initializing user.');
         }
       } else if (!session?.user) {
         setLoading(false);
-        setUserInitialized(true); // No user, so initialization is considered done
+        setUserInitialized(true);
       }
     };
 
     initializeUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, fetchUserData, userInitialized]);
 
   const handleUsernameUpdate = async (profileData: ProfileFormData) => {
@@ -92,7 +90,6 @@ export default function Home({ session }: { session: Session | null }) {
           bio: profileData.bio,
           location: profileData.location,
           website: profileData.website,
-          // Add other profile fields here
         }),
       });
 
@@ -202,7 +199,6 @@ function AddUsernameDialog({ onProfileUpdate, initialAvatarUrl }: AddUsernameDia
 
     try {
       await onProfileUpdate({ username, bio, location, website });
-      // Optionally close the dialog here if you manage its open state
     } finally {
       setLoading(false);
     }
@@ -249,7 +245,6 @@ function AddUsernameDialog({ onProfileUpdate, initialAvatarUrl }: AddUsernameDia
             placeholder="Website (optional)"
             aria-label="Website Input"
           />
-          {/* You might want a more sophisticated way to handle avatar URL */}
           <Input
             type="url"
             value={avatarUrl}
