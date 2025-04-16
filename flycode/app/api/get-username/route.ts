@@ -1,53 +1,37 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-
-// Define an interface for the route parameters
-interface Params {
-  user_id: string;
-}
-
-// Define the type for the second argument of the GET function
-type RouteParams = {
-  params: Params;
-};
+import { createClient } from '@/utils/supabase/server'; // Import your Supabase client
 
 /**
- * API route handler to retrieve a username from the user_profiles table in Supabase.
+ * API route handler to retrieve all usernames from the user_profiles table.
+ *
+ * @returns A NextResponse object containing an array of usernames or an error.
  */
-export async function GET(
-  request: Request,
-  context: RouteParams // Use the RouteParams type here
-) {
-  const { params } = context;
-  const { user_id } = params;
-
-  if (!user_id) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-  }
-
+export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(); // Use your server-side Supabase client
     const { data, error } = await supabase
-      .from('user_profiles')
-      .select('username')
-      .eq('id', user_id)
-      .single();
+      .from('user_profiles') // Specify the table name
+      .select('username');    // Select only the 'username' column
 
     if (error) {
       console.error('Supabase error:', error);
       return NextResponse.json(
-        { error: 'Failed to retrieve username', details: error.message },
+        { error: 'Failed to retrieve usernames', details: error.message },
         { status: 500 }
       );
     }
 
-    if (!data) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    if (!data || data.length === 0) {
+      return NextResponse.json({ message: 'No usernames found' }, { status: 200 }); // Or 404, depending on your needs
     }
 
-    return NextResponse.json({ username: data.username }, { status: 200 });
+    // If successful, data will be an array of objects, e.g., [{ username: 'user1' }, { username: 'user2' }, ...]
+    // We want to return just the array of usernames.
+    const usernames = data.map(user => user.username);
+
+    return NextResponse.json({ usernames }, { status: 200 });
   } catch (error) {
-    console.error('Error in /api/get-username:', error);
+    console.error('Error in /api/get-all-usernames:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
