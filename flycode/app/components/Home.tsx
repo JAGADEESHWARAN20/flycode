@@ -51,7 +51,7 @@ export default function Home({ session }: { session: Session | null }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              email: session.user.email,
+              email: session.user.user_metadata.email,
               name: session.user.user_metadata?.name || 'New User',
             }),
           });
