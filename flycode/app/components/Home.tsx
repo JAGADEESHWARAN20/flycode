@@ -157,10 +157,10 @@ export default function Home({ session }: { session: Session | null }) {
           <AddUsernameDialog onProfileUpdate={handleUsernameUpdate} initialAvatarUrl={avatar_url} />
         </div>
       )}
-
-      <form action="/auth" method="post">
+      <Link href={'/auth'}>
         <Button type="submit">Sign Out</Button>
-      </form>
+      </Link>
+
     </div>
   );
 }
