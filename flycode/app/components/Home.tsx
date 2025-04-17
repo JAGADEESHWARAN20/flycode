@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useState, useEffect, useCallback } from 'react';
 import { Session } from '@supabase/auth-helpers-nextjs';
+import { signOut } from '@/utils/actions';
 
 interface ProfileFormData {
   username: string;
@@ -157,7 +158,7 @@ export default function Home({ session }: { session: Session | null }) {
           <AddUsernameDialog onProfileUpdate={handleUsernameUpdate} initialAvatarUrl={avatar_url} />
         </div>
       )}
-      <Link href={'/auth'}>
+      <Link href={'/auth'} onClick={signOut}>
         <Button type="submit">Sign Out</Button>
       </Link>
 
