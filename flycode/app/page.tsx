@@ -10,6 +10,5 @@ export default async function Page() {
   if (error) {
     console.error('Error fetching session:', error.message)
   }
-
   return <Home session={session} />
 }
